@@ -12,12 +12,12 @@ import (
 )
 
 var diruploadCmd = &cobra.Command{
-    Use:   "dup",
+    Use:   "directory-upload",
     Aliases: []string{"directory-upload"},
-    Short:  "dup",
+    Short:  "uploads a directory as a tar archive to a specified S3 bucket",
     Args:  cobra.ExactArgs(0),
     Run: func(cmd *cobra.Command, args []string) {
-        dirupload()
+        archiveUpload()
         
     },
 }
@@ -31,10 +31,10 @@ type promptContent struct {
 	label    string
 }
 
-func dirupload() {
+func archiveUpload() {
 	bucketPromptContent := promptContent{
 		"Please enter a bucket name",
-		"What bucket would you like to upload to?",
+		"Enter bucket to upload archive to",
 	}
 
 	buckets, err := gaws.BucketList()
@@ -46,24 +46,43 @@ func dirupload() {
 	bucket := promptGetInput(bucketPromptContent)
 	fmt.Printf("The bucket name you entered is %s\n\n", bucket)
 
-
-	for _, bucket := range buckets.Buckets{
-		fmt.Printf("%s\n", *bucket.Name)
-		//:TODO CHECK IF BUCKET ALREADY EXISTS, IF EXISTS DONT TRY TO CREATE IT
-		}
-	
-		
-	
 	directoryPromptContent := promptContent{
 		"Please enter a local directory",
-		"What local directory would you like to upload?",
+		"Enter the relative path of directory to archive and upload",
 	}
+	
 	directory := promptGetInput(directoryPromptContent)
 	fmt.Printf("The directory you selected is %s\n\n", directory)
+	
+	filenamePromptContent := promptContent{
+		"Please enter a filename for the archive",
+		"Enter filename for archive:",
+	}
 
-	gaws.Tarfunc()
+	filename := promptGetInput(filenamePromptContent)
+	fmt.Printf("The directory you selected is %s\n\n", directory)
+	err = os.Remove(filename)
+	if err != nil {
+		fmt.Println(err)
+	}
+	
+	file := gaws.CreateTar(filename, directory)
+
+	// if bucket exists, go straight to upload
+	// else, create bucket
+
+	for _, buckets := range buckets.Buckets {
+		if bucket == *buckets.Name {
+			fmt.Printf("the one from the pointer %s\n\n\n",*buckets.Name)
+			gaws.S3Fileupload(filename, file, bucket)			
+			return
+		}
+		
+	}
 	
 	gaws.CreateBucket(bucket)
+	gaws.S3Fileupload(filename, file, bucket)
+
 
 	
 }

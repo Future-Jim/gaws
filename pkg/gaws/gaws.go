@@ -1,16 +1,16 @@
 package gaws
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
 	"fmt"
 	"archive/tar"
-
 	"io"
 	"os"
 	"path/filepath"
-	
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
 func sessionInit() (*s3.S3, error) {
@@ -47,8 +47,6 @@ func BucketList() (*s3.ListBucketsOutput, error) {
 		fmt.Printf("%s\n", *bucket.Name)
 	}
 	return buckets, nil
-
-
 }
 
 func listBuckets(client *s3.S3) (*s3.ListBucketsOutput, error) {
@@ -74,7 +72,6 @@ func CreateBucket(bucket string) () {
 		return
 	}
 
-	    // Wait until bucket is created before finishing
 	fmt.Printf("Waiting for bucket %q to be created...\n", bucket)
 	
 	err = client.WaitUntilBucketExists(&s3.HeadBucketInput{
@@ -84,60 +81,97 @@ func CreateBucket(bucket string) () {
 		fmt.Printf("Error occurred while waiting for bucket to be created, %v", bucket)
 		return
 	}
-	
 	fmt.Printf("Bucket %q successfully created\n", bucket)
 }
 
-func checkerror(err error) {
-   if err != nil {
-      fmt.Println(err)
-      os.Exit(1)
-   }
+
+func CreateTar(filename string, sourcedir string) (*os.File) {
+ 
+	dir, err := os.Open(sourcedir)
+	checkerror(err)
+	defer dir.Close()
+	
+	// get list of files
+	files, err := dir.Readdir(0)
+	checkerror(err)
+	
+	// create tar file
+	tarfile, err := os.Create(filename)
+	checkerror(err)
+	defer tarfile.Close()
+	
+	var fileWriter io.WriteCloser = tarfile
+	
+	tarfileWriter := tar.NewWriter(fileWriter)
+	defer tarfileWriter.Close()
+	
+	for _, fileInfo := range files {
+		
+		if fileInfo.IsDir() {
+			continue
+		}
+		
+		file, err := os.Open(dir.Name() + string(filepath.Separator) + fileInfo.Name())
+		checkerror(err)
+		defer file.Close()
+		
+		// prepare the tar header
+		header := new(tar.Header)
+		header.Name = file.Name()
+		header.Size = fileInfo.Size()
+		header.Mode = int64(fileInfo.Mode())
+		header.ModTime = fileInfo.ModTime()
+		
+		err = tarfileWriter.WriteHeader(header)
+		checkerror(err)
+		
+		_, err = io.Copy(tarfileWriter, file)
+		checkerror(err)
+	}
+	return tarfile
 }
-func Tarfunc() () {
- 
-   destinationfile := "tarball.tar"
-   sourcedir := "/home/jim/git/go/src/gaws"
- 
-   dir, err := os.Open(sourcedir)
-   checkerror(err)
-   defer dir.Close()
- 
-   // get list of files
-   files, err := dir.Readdir(0)
-   checkerror(err)
- 
-   // create tar file
-   tarfile, err := os.Create(destinationfile)
-   checkerror(err)
-   defer tarfile.Close()
- 
-   var fileWriter io.WriteCloser = tarfile
- 
-   tarfileWriter := tar.NewWriter(fileWriter)
-   defer tarfileWriter.Close()
- 
-   for _, fileInfo := range files {
- 
-	        if fileInfo.IsDir() {
-	   continue
-	   }
- 
-      file, err := os.Open(dir.Name() + string(filepath.Separator) + fileInfo.Name())
-      checkerror(err)
-      defer file.Close()
- 
-      // prepare the tar header
-      header := new(tar.Header)
-      header.Name = file.Name()
-      header.Size = fileInfo.Size()
-      header.Mode = int64(fileInfo.Mode())
-      header.ModTime = fileInfo.ModTime()
- 
-      err = tarfileWriter.WriteHeader(header)
-      checkerror(err)
- 
-      _, err = io.Copy(tarfileWriter, file)
-      checkerror(err)
-   }
+
+func S3Fileupload(filename string, file *os.File, bucket string) {
+	
+	file, err :=os.Open(filename)
+	if err != nil {
+		exitErrorf("Unable to open file %q, %v", file, err)
+	}
+	defer file.Close()
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String("us-east-1")},
+	)
+	uploader := s3manager.NewUploader(sess)
+	
+	_, err = uploader.Upload(&s3manager.UploadInput{
+		Bucket: aws.String(bucket),
+		Key: aws.String(filename),
+		Body: file,
+	})
+	if err != nil {
+		exitErrorf("Unable to upload %q to %q, %v", filename, bucket, err)
+	}
+	
+	fmt.Printf("Successfully uploaded %q to %q\n", filename, bucket)
+	
+	removeFile(filename)
+}
+
+func removeFile (filename string){
+	err := os.Remove(filename)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+func exitErrorf(msg string, args ...interface{}) {
+	fmt.Fprintf(os.Stderr, msg+"\n", args...)
+	os.Exit(1)
+}
+
+func checkerror(err error) {
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
