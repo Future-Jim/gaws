@@ -11,7 +11,6 @@ var rootCmd = &cobra.Command{
     Use:  "gaws",
     Short: "go + aws",
     Long: "gaws - a simple CLI that helps with some AWS tasks",
-  
 
     Run: func(cmd *cobra.Command, args []string) {
 
