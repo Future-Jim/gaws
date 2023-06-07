@@ -68,23 +68,15 @@ func archiveUpload() {
 	
 	file := gaws.CreateTar(filename, directory)
 
-	// if bucket exists, go straight to upload
-	// else, create bucket
-
 	for _, buckets := range buckets.Buckets {
 		if bucket == *buckets.Name {
-			fmt.Printf("the one from the pointer %s\n\n\n",*buckets.Name)
 			gaws.S3Fileupload(filename, file, bucket)			
 			return
-		}
-		
+		}		
 	}
-	
 	gaws.CreateBucket(bucket)
 	gaws.S3Fileupload(filename, file, bucket)
-
-
-	
+	return 
 }
 
 func promptGetInput(pc promptContent) string {
@@ -113,8 +105,6 @@ func promptGetInput(pc promptContent) string {
 		fmt.Printf("Prompt failed %v\n", err)
 		os.Exit(1)
 	}
-
-	//	fmt.Printf("Input: %s\n", result)
 
 	return result
 }
