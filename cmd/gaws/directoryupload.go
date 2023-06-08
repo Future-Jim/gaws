@@ -33,7 +33,7 @@ type promptContent struct {
 
 func archiveUpload() {
 	bucketPromptContent := promptContent{
-		"Please enter a bucket name",
+		"Please enter a bucket name.",
 		"Enter bucket to upload archive to",
 	}
 
@@ -69,7 +69,7 @@ func archiveUpload() {
 	file := gaws.CreateTar(filename, directory)
 
 	for _, buckets := range buckets.Buckets {
-		if bucket == *buckets.Name {
+		   if bucket == *buckets.Name {
 			gaws.S3Fileupload(filename, file, bucket)			
 			return
 		}		
@@ -102,7 +102,7 @@ func promptGetInput(pc promptContent) string {
 
 	result, err := prompt.Run()
 	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
+                                    		fmt.Printf("Prompt failed %v\n", err)
 		os.Exit(1)
 	}
 
