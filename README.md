@@ -6,7 +6,7 @@ gAWS is a library Cobra CLI tool for quickly performing simple aws tasks.
 
 gAWS *currently* provides:
 
-* S3
+### S3
 - list-buckets
 - directory-upload
 - delete-objects
