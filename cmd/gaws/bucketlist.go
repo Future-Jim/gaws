@@ -5,18 +5,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var bucketListCmd = &cobra.Command{
-	Use:     "bucketlist",
-	Aliases: []string{"bl"},
-	Short:   "list buckets from s3",
+var listBucketsCmd = &cobra.Command{
+	Use:     "list-buckets",
+	Aliases: []string{"list-buckets"},
+	Short:   "list all buckets from s3",
 	Args:    cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		gaws.BucketList()
+		gaws.ListBuckets()
 
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(bucketListCmd)
+	rootCmd.AddCommand(listBucketsCmd)
 
 }
