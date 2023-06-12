@@ -27,4 +27,10 @@ aws_secret_access_key = SECRETKEY
 ```
 
 
+In order to use gAWS from the CLI, ensure that the built binary is part of your PATH. Then simply run the following command to see all available options.
+```
+$ gaws -h
+```
+
+
 
