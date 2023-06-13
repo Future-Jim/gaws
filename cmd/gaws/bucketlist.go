@@ -18,5 +18,4 @@ var listBucketsCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(listBucketsCmd)
-
 }

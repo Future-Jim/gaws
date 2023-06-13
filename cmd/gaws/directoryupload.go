@@ -26,11 +26,6 @@ func init() {
 	rootCmd.AddCommand(diruploadCmd)
 }
 
-type promptContent struct {
-	errorMsg string
-	label    string
-}
-
 func archiveUpload() {
 	bucketPromptContent := promptContent{
 		"Please enter a bucket name.",
