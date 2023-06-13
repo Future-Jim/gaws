@@ -52,7 +52,7 @@ func ListBuckets() (*s3.ListBucketsOutput, error) {
 	if err != nil {
 		return nil, err
 	}
-	buckets, err := listBuckets(client)
+	buckets, err := client.ListBuckets(nil)
 	if err != nil {
 		return nil, err
 	}
@@ -61,14 +61,6 @@ func ListBuckets() (*s3.ListBucketsOutput, error) {
 		fmt.Printf("%s\n", *bucket.Name)
 	}
 	return buckets, nil
-}
-
-func listBuckets(client *s3.S3) (*s3.ListBucketsOutput, error) {
-	res, err := client.ListBuckets(nil)
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
 }
 
 func DeleteObjects(bucket string) {
