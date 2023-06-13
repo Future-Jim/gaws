@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/future-jim/gaws/pkg/gaws"
-
 	"github.com/spf13/cobra"
 )
 
