@@ -17,7 +17,7 @@ gAWS *currently* provides:
 # Installing
 
 # Usage
-'gAWS' requires you to be authenticated to AWS via a ~/.aws/credentials file.
+`gAWS` requires you to be authenticated to AWS via a ~/.aws/credentials file.
 
 ~/.aws/credentials
 ```
