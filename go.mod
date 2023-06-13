@@ -1,10 +1,9 @@
-module gaws
+module github.com/future-jim/gaws
 
 go 1.20
 
 require (
 	github.com/aws/aws-sdk-go v1.44.281
-	github.com/future-jim/gaws v0.0.0-20230612202108-5a29794424ce
 	github.com/manifoldco/promptui v0.9.0
 	github.com/spf13/cobra v1.7.0
 )
